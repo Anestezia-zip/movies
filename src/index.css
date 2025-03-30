@@ -100,6 +100,26 @@
     }
   }
 
+  .trending {
+    @apply mt-20;
+
+    & ul {
+      @apply flex flex-row overflow-y-auto gap-5 -mt-10 w-full hide-scrollbar;
+    }
+
+    & ul li {
+      @apply min-w-[230px] flex flex-row items-center;
+    }
+
+    & ul li p {
+      @apply fancy-text mt-[22px] text-nowrap;
+    }
+
+    & ul li img {
+      @apply w-[127px] h-[163px] rounded-lg object-cover -ml-3.5;
+    }
+  }
+
   .movie-card {
     @apply flex flex-col justify-between bg-dark-100 p-2 rounded-lg shadow-inner shadow-light-100/30;
 
@@ -138,5 +158,20 @@
     & .content .year {
       @apply text-gray-100 font-medium text-base;
     }
+  }
+}
+
+@utility fancy-text {
+  -webkit-text-stroke: 5px rgba(206, 206, 251, 0.5);
+  font-size: 190px;
+  font-family: "Bebas Neue", sans-serif;
+}
+
+@utility hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
