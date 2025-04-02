@@ -28,7 +28,7 @@
   }
 
   h1 {
-    @apply p-1 mt-2 mb-10 mx-auto max-w-4xl text-center text-4xl font-bold leading-tight tracking-[-1%] text-gray-200 xl:text-[64px] sm:leading-[66px];
+    @apply p-1 mt-2 mb-10 text-4xl font-bold leading-tight tracking-[-1%] text-gray-200 xl:text-[64px] sm:leading-[66px];
   }
 
   h2 {
@@ -36,7 +36,7 @@
   }
 
   main {
-    @apply min-h-screen relative bg-primary p-2;
+    @apply min-h-screen relative bg-primary/60 p-2 mx-8;
   }
 
   header {
@@ -77,7 +77,7 @@
   }
 
   .search {
-    @apply w-full bg-light-100/5 px-4 py-2 rounded-lg max-w-3xl mx-auto mt-4;
+    @apply w-full bg-light-100/5 px-4 py-2 rounded-lg max-w-3xl mx-auto;
 
     & div {
       @apply relative flex items-center;
@@ -101,10 +101,14 @@
   }
 
   .trending {
-    @apply mt-20;
+    @apply p-4 pb-0 mt-2;
+
+    & h2 {
+      @apply text-white;
+    }
 
     & ul {
-      @apply flex flex-row overflow-y-auto gap-5 -mt-10 w-full hide-scrollbar;
+      @apply flex flex-row overflow-y-auto -mt-10 w-full hide-scrollbar;
     }
 
     & ul li {
@@ -159,10 +163,26 @@
       @apply text-gray-100 font-medium text-base;
     }
   }
+
+  .movie-detail-table {
+    @apply w-full max-w-[800px] mt-4 border-collapse text-left text-[#d8e2ff];
+
+    & tr {
+      @apply md:text-lg;
+    }
+
+    & th {
+      @apply p-2 font-normal align-top w-[18%];
+    }
+
+    & td {
+      @apply p-2 font-semibold;
+    }
+  }
 }
 
 @utility fancy-text {
-  -webkit-text-stroke: 5px rgba(206, 206, 251, 0.5);
+  -webkit-text-stroke: 7px rgba(206, 206, 251, 0.5);
   font-size: 190px;
   font-family: "Bebas Neue", sans-serif;
 }
@@ -170,6 +190,7 @@
 @utility hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  color: rgb(92, 164, 206);
 
   &::-webkit-scrollbar {
     display: none;
