@@ -113,7 +113,7 @@ const Home = () => {
   }, []);
 
   // Handle movie click (for search count update)
-  const handleMovieClick = async (movie) => {
+  const handleMovieClick = async (movie, index) => {
     const termToSave = searchTerm.trim() !== "" ? searchTerm : movie.title;
     try {
       await updateSearchCount(termToSave, movie);
@@ -121,56 +121,80 @@ const Home = () => {
       console.error("Error updating search count:", error);
     }
 
+    const pageOfClickedMovie = Math.ceil((index + 1) / 20);
     sessionStorage.setItem("lastMovieIndex", movie.id);
-    sessionStorage.setItem("loadedMoviesCount", movieList.length);
+    sessionStorage.setItem("lastPage", pageOfClickedMovie);
   };
 
-  // 1. useEffect для установки нужной страницы при маунте
   useEffect(() => {
-    const savedCount = sessionStorage.getItem("loadedMoviesCount");
-    if (savedCount) {
-      const pagesToLoad = Math.ceil(savedCount / 20);
-
-      // 🛠️ ручной fetch для полного контроля
-      const loadAllPages = async () => {
-        for (let i = 1; i <= pagesToLoad; i++) {
-          await fetchMovies(debouncedSearchTerm, i);
+    const savedPage = sessionStorage.getItem("lastPage");
+    const lastMovieIndex = sessionStorage.getItem("lastMovieIndex");
+  
+    if (!savedPage || !lastMovieIndex) return;
+  
+    const lastPage = parseInt(savedPage, 10);
+  
+    const loadAllPages = async () => {
+      setIsLoading(true);
+  
+      try {
+        const promises = [];
+  
+        // Ограничиваем количество страниц, если их слишком много
+        const MAX_PRELOAD_PAGES = 50;
+        const pagesToLoad = Math.min(lastPage, MAX_PRELOAD_PAGES);
+  
+        // Загружаем страницы параллельно
+        for (let p = 1; p <= pagesToLoad; p++) {
+          const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&page=${p}`;
+          promises.push(fetch(endpoint, API_OPTIONS).then((res) => res.json()));
         }
-      };
-
-      loadAllPages();
-    }
+  
+        // Ждем завершения всех промисов
+        const results = await Promise.all(promises);
+  
+        // Объединяем все фильмы в один массив
+        const allMovies = results.flatMap((res) => res.results);
+        setMovieList(allMovies);
+      } catch (error) {
+        console.error("Error preloading pages:", error);
+        setErrorMessage("Error loading saved movies.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    loadAllPages();
   }, []);
+  
+  
 
-  // 2. Флаг, чтобы заскроллить один раз
   useEffect(() => {
-    const savedCount = parseInt(
-      sessionStorage.getItem("loadedMoviesCount"),
-      10
-    );
     const lastMovieIndex = sessionStorage.getItem("lastMovieIndex");
     const hasScrolled = sessionStorage.getItem("hasScrolled");
-
-    if (
-      lastMovieIndex &&
-      !hasScrolled &&
-      movieList.length >= savedCount // дождались загрузки всех фильмов
-    ) {
-      setTimeout(() => {
-        const movieElement = document.getElementById(lastMovieIndex);
-        if (movieElement) {
-          movieElement.scrollIntoView({ behavior: "smooth", block: "center" });
-          sessionStorage.setItem("hasScrolled", "true");
-
-          setTimeout(() => {
-            sessionStorage.removeItem("lastMovieIndex");
-            sessionStorage.removeItem("loadedMoviesCount");
-            sessionStorage.removeItem("hasScrolled");
-          }, 1000);
-        }
-      }, 300);
-    }
+  
+    if (!lastMovieIndex || hasScrolled) return;
+  
+    const tryScroll = () => {
+      const element = document.getElementById(lastMovieIndex);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        sessionStorage.setItem("hasScrolled", "true");
+  
+        setTimeout(() => {
+          sessionStorage.removeItem("lastMovieIndex");
+          sessionStorage.removeItem("lastPage");
+          sessionStorage.removeItem("hasScrolled");
+        }, 1000);
+      } else {
+        // Если элемент ещё не загрузился, пробуем снова через 200 мс
+        setTimeout(tryScroll, 200);
+      }
+    };
+  
+    tryScroll();
   }, [movieList]);
+  
 
   return (
     <div>
@@ -226,7 +250,7 @@ const Home = () => {
               <MovieCard
                 key={i}
                 movie={movie}
-                onClick={() => handleMovieClick(movie)}
+                onClick={() => handleMovieClick(movie, i)}
                 id={movie.id}
               />
             ))}
@@ -239,7 +263,7 @@ const Home = () => {
           src="./arrow.png"
           alt="Arrow up"
           onClick={() => window.scrollTo({ top: 600, behavior: "smooth" })}
-          className="w-14 rounded-full fixed right-3 bottom-3 bg-light-200 hover:bg-blue-200 transition-all duration-300 ease-in-out outline-6 outline-light-200 hover:outline-blue-200 outline-offset-[-6px] cursor-pointer"
+          className="w-14 rounded-full fixed left-3 bottom-3 bg-light-200 hover:bg-blue-200 transition-all duration-300 ease-in-out outline-6 outline-light-200 hover:outline-blue-200 outline-offset-[-6px] cursor-pointer"
         />
       </main>
 
