@@ -191,6 +191,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
   color: rgb(92, 164, 206);
+  color: #0e3e5a;
 
   &::-webkit-scrollbar {
     display: none;

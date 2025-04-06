@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const MovieCard = ({
-  movie: { id, title, vote_average, poster_path, release_date, original_language }, onClick
+  movie: { id, title, vote_average, poster_path, release_date, original_language }, onClick, ref
 }) => {
   
   return (
-    <div className="movie-card">
+    <div className="movie-card" id={id}>
       <Link to={`/movie/${id}`} onClick={onClick}>
         <figure>
           <img

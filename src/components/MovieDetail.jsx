@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { Link, useParams } from "react-router-dom";
+import MovieDetailSkelleton from "./MovieDetailSkelleton";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -19,6 +20,10 @@ const MovieDetail = () => {
   const [trailerKey, setTrailerKey] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     if (!movieId) {
@@ -61,7 +66,21 @@ const MovieDetail = () => {
     fetchMovie();
   }, [movieId]);
 
-  if (isLoading) return <p className="text-white">Loading...</p>;
+  if (isLoading)
+    return (
+      <div className="text-white justify-center items-center m-6 mt-12">
+        <MovieDetailSkelleton size="w-[140px] mx-auto h-10 m-2" />
+        <div className="flex justify-between">
+          <MovieDetailSkelleton size="w-[400px] h-10 m-2" />
+          <MovieDetailSkelleton size="w-[200px] h-10 m-2" />
+        </div>
+        <MovieDetailSkelleton size="w-[200px]  h-8 m-2 mt-6" />
+        <div className="flex max-md:flex-col">
+          <MovieDetailSkelleton size="w-[25%] max-md:w-[90%] max-md:mx-auto h-[500px] max-md:h-[410px] m-2 mt-6" />
+          <MovieDetailSkelleton size="w-[75%] max-md:w-full max-md:mx-auto h-[500px] max-md:h-[250px] m-2 mt-6" />
+        </div>
+      </div>
+    );
   if (errorMessage) return <p className="text-red-500">{errorMessage}</p>;
   if (!movie) return null;
 
@@ -77,17 +96,17 @@ const MovieDetail = () => {
   return (
     <div className="p-8 px-5">
       <div className="p-6 text-[#a3b2de] rounded-2xl shadow-[0_0_15px_5px_rgba(133,195,231,0.4)]">
-        <Link to={'/'}>
+        <Link to="/" state={{ fromDetailPage: true }}>
           <button className="flex items-center gap-2 bg-[#3b486d] text-yellow-50 p-4 py-0.5 rounded mx-auto cursor-pointer">
             <FaArrowLeftLong />
             <span>Home</span>
           </button>
         </Link>
         <div className="flex max-md:flex-col justify-between items-baseline">
-          <h1 className="text-4xl md:text-5xl 2xl:text-6xl mb-6 max-md:mb-4 font-bold">
+          <h1 className="text-4xl md:text-5xl 2xl:text-6xl mb-6 max-md:mb-4 font-bold px-3">
             {movie.title}
           </h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 whitespace-nowrap">
             <span className="text-lg font-semibold flex items-center bg-[#221F3D]/80 max-md:mb-2 p-2 px-3 pr-4 rounded">
               <span>⭐</span>
               <span>
@@ -97,7 +116,7 @@ const MovieDetail = () => {
                 <span>/10 ({movie.vote_count})</span>
               </span>
             </span>
-            <span className="flex items-center gap-2 font-semibold bg-[#221F3D]/80 p-2 px-3 rounded max-md:hidden">
+            <span className="flex justify-center items-center gap-2 font-semibold bg-[#221F3D]/80 w-14 rounded max-md:hidden">
               <img src="../icons.png" alt="Icon" />
               <span>1</span>
             </span>
@@ -117,10 +136,10 @@ const MovieDetail = () => {
             <img
               src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
               alt={movie.title}
-              className="rounded-lg object-fit w-full max-h-[500px] "
+              className="rounded-lg object-fit w-full max-h-[500px] max-md:w-auto max-md:mx-auto"
             />
           </figure>
-          <div className="relative w-full max-w-[870px]">
+          <div className="relative w-full max-w-[870px] max-md:h-[300px] max-md:w-auto">
             {trailerKey ? (
               <iframe
                 className="rounded-lg w-full h-full "
@@ -134,7 +153,7 @@ const MovieDetail = () => {
               <img
                 src={`https://image.tmdb.org/t/p/w500${movie.backdrop_path}`}
                 alt={`${movie.title} Trailer`}
-                className="rounded-lg"
+                className="rounded-lg md:w-full max-md:mx-auto"
               />
             )}
           </div>

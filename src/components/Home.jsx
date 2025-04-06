@@ -40,7 +40,9 @@ const Home = () => {
       }
 
       const endpoint = query
-        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&page=${pageNum}`
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(
+            query
+          )}&page=${pageNum}`
         : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&page=${pageNum}`;
 
       const response = await fetch(endpoint, API_OPTIONS);
@@ -78,7 +80,8 @@ const Home = () => {
   useEffect(() => {
     const handleScroll = () => {
       if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+        window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 500 &&
         !isLoading &&
         debouncedSearchTerm === ""
       ) {
@@ -117,7 +120,57 @@ const Home = () => {
     } catch (error) {
       console.error("Error updating search count:", error);
     }
+
+    sessionStorage.setItem("lastMovieIndex", movie.id);
+    sessionStorage.setItem("loadedMoviesCount", movieList.length);
   };
+
+  // 1. useEffect для установки нужной страницы при маунте
+  useEffect(() => {
+    const savedCount = sessionStorage.getItem("loadedMoviesCount");
+    if (savedCount) {
+      const pagesToLoad = Math.ceil(savedCount / 20);
+
+      // 🛠️ ручной fetch для полного контроля
+      const loadAllPages = async () => {
+        for (let i = 1; i <= pagesToLoad; i++) {
+          await fetchMovies(debouncedSearchTerm, i);
+        }
+      };
+
+      loadAllPages();
+    }
+  }, []);
+
+  // 2. Флаг, чтобы заскроллить один раз
+  useEffect(() => {
+    const savedCount = parseInt(
+      sessionStorage.getItem("loadedMoviesCount"),
+      10
+    );
+    const lastMovieIndex = sessionStorage.getItem("lastMovieIndex");
+    const hasScrolled = sessionStorage.getItem("hasScrolled");
+
+    if (
+      lastMovieIndex &&
+      !hasScrolled &&
+      movieList.length >= savedCount // дождались загрузки всех фильмов
+    ) {
+      setTimeout(() => {
+        const movieElement = document.getElementById(lastMovieIndex);
+        if (movieElement) {
+          movieElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          sessionStorage.setItem("hasScrolled", "true");
+
+          setTimeout(() => {
+            sessionStorage.removeItem("lastMovieIndex");
+            sessionStorage.removeItem("loadedMoviesCount");
+            sessionStorage.removeItem("hasScrolled");
+          }, 1000);
+        }
+      }, 300);
+    }
+  }, [movieList]);
 
   return (
     <div>
@@ -169,11 +222,12 @@ const Home = () => {
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
           <ul className="movie-list">
-            {movieList.map((movie) => (
+            {movieList.map((movie, i) => (
               <MovieCard
-                key={movie.id}
+                key={i}
                 movie={movie}
                 onClick={() => handleMovieClick(movie)}
+                id={movie.id}
               />
             ))}
           </ul>
